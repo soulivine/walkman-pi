@@ -1,115 +1,165 @@
-# 🎵 Walkman — Raspberry Pi Music & Video Player
+# 🎵 Walkman — PiTFT Edition
 
-A sleek, Sony Walkman-inspired media player for Raspberry Pi running Linux.  
-Plays music and music videos with a beautiful dark retro-modern UI.
+**Raspberry Pi Zero 2 W + Adafruit PiTFT Plus 2.8" 320×240 Capacitive Touchscreen**
 
----
-
-## Features
-
-- **Music Playback** — MP3, FLAC, WAV, OGG, AAC, M4A, OPUS, WMA
-- **Video Playback** — MP4, MKV, AVI, MOV, WEBM, and more (opens fullscreen)
-- **Animated Visualizer** — Real-time bar visualizer while music plays
-- **Retro Dark UI** — Orange-on-black Sony Walkman aesthetic
-- **Live Search** — Instantly filter your library as you type
-- **Transport Controls** — Play, Pause, Prev, Next with progress bar
-- **Shuffle & Repeat** — Shuffle, Repeat All, or Repeat One
-- **Volume Control** — On-screen slider
-- **Filter Tabs** — Show All / Music only / Video only
-- **Persistent Config** — Remembers your folders, volume, and settings
-- **Fullscreen** — Press F11 to go fullscreen (great for Pi touchscreens)
+A Sony Walkman-inspired music & video player purpose-built for the tiny PiTFT screen with physical button support and Bluetooth headphone pairing.
 
 ---
 
-## Requirements
+## Hardware
 
-- Raspberry Pi running Raspberry Pi OS (or any Debian-based Linux)
-- Python 3.7+
-- `python3-tk` — for the GUI
-- `mpv` — audio/video playback backend
+| Component | Part |
+|-----------|------|
+| Computer | Raspberry Pi Zero 2 W |
+| Display | Adafruit PiTFT Plus 2.8" (#1983) |
+| Resolution | 320 × 240 |
+| Touch | Capacitive (finger touch) |
+| Buttons | 4 physical side buttons |
+| Audio | Bluetooth headphones |
+
+---
+
+## Physical Button Layout
+
+```
+┌─────────────────┐
+│                 │ ← BTN 1 (GPIO 17) = Play / Pause
+│                 │
+│   [  screen  ]  │ ← BTN 2 (GPIO 22) = Previous Track
+│                 │
+│                 │ ← BTN 3 (GPIO 23) = Next Track
+│                 │
+│                 │ ← BTN 4 (GPIO 27) = Mute / Unmute
+└─────────────────┘
+```
+
+---
+
+## Screens
+
+### Player (main screen)
+- Album art / track type icon
+- Track title
+- Animated bar visualizer
+- Touchable seek bar
+- ▶ / ⏸ / ⏮ / ⏭ transport controls
+- Shuffle and Repeat toggles
+- Touchable volume slider
+- Bluetooth connection status in top bar
+- Nav bar → Library / Settings / Bluetooth
+
+### Library
+- Searchable track list
+- Filter: All / Music / Video
+- Tap once, then tap again to play (touch-friendly)
+
+### Bluetooth
+- Scan for nearby devices (8 second scan)
+- Connect / Disconnect with one tap
+- Shows currently connected device
+
+### Settings
+- Add/remove music folders
+- Screen brightness slider
+- Rescan library
+- Shutdown / Restart buttons
 
 ---
 
 ## Installation
 
+### Step 0 — Set up PiTFT display first
+Run Adafruit's official installer:
 ```bash
-# 1. Clone or copy this folder to your Pi, then:
-cd walkman
+curl https://raw.githubusercontent.com/adafruit/Raspberry-Pi-Installer-Scripts/main/adafruit-pitft.py | sudo python3
+```
+Select **PiTFT 2.8" capacitive (#1983)**, then reboot.
+
+### Step 1 — Clone and install Walkman
+```bash
+git clone https://github.com/YOUR_USERNAME/walkman-pi.git
+cd walkman-pi
 chmod +x install.sh
 ./install.sh
 ```
 
-This installs all dependencies, copies the app, and creates a desktop shortcut.
-
----
-
-## Running
-
+### Step 2 — Add music
 ```bash
-# From terminal:
-walkman
+# Copy music to the default folder:
+cp -r /path/to/music ~/Music/
 
-# Or double-click "Walkman" in the Applications → Sound & Video menu
+# Or use a USB drive — mount it and add the folder in Settings
+```
+
+### Step 3 — Launch
+```bash
+walkman
 ```
 
 ---
 
-## Usage
+## Pairing Bluetooth Headphones
 
-1. Click **＋ Add Folder** to add your music/video directory (e.g. `~/Music`)
-2. Browse your library in the left panel
-3. **Double-click** a track to play it
-4. Use transport buttons to skip, pause, seek
-5. Toggle **Shuffle** (⇀) and **Repeat** (↺/↻) modes
-6. Filter by All / Music / Video using the top-right tabs
-7. Search by typing in the search box
+1. Put your headphones in **pairing mode**
+2. In Walkman, tap **🔵 BLUETOOTH** (bottom nav)
+3. Tap **🔍 SCAN FOR DEVICES** (waits ~8 seconds)
+4. Tap your headphones in the list
+5. Tap **⚡ CONNECT**
+
+Once paired, the headphones will auto-reconnect on future boots if you run:
+```bash
+bluetoothctl trust YOUR_MAC_ADDRESS
+```
+(The app does this automatically when you connect.)
 
 ---
 
-## Keyboard Shortcuts
+## Autostart on Boot
 
-| Key       | Action              |
-|-----------|---------------------|
-| `F11`     | Toggle fullscreen   |
-| `Escape`  | Exit fullscreen     |
+The installer offers to enable autostart. To do it manually:
+```bash
+mkdir -p ~/.config/autostart
+cp ~/.local/share/applications/walkman.desktop ~/.config/autostart/
+```
+
+---
+
+## Supported Formats
+
+**Music:** MP3, FLAC, WAV, OGG, AAC, M4A, OPUS, WMA  
+**Video:** MP4, MKV, AVI, MOV, WEBM, M4V, FLV, MPG  
+(Videos play fullscreen via mpv)
+
+---
+
+## Requirements
+
+Installed automatically by `install.sh`:
+- `python3` + `python3-tk`
+- `mpv` — media playback backend
+- `python3-rpi.gpio` — physical button support
+- `bluez` + `pulseaudio-module-bluetooth` — Bluetooth audio
 
 ---
 
 ## File Structure
 
 ```
-walkman/
-├── walkman.py      # Main application
-├── install.sh      # Installer script
-└── README.md       # This file
+walkman-pi/
+├── walkman.py     # Full application (~600 lines)
+├── install.sh     # Installer
+└── README.md      # This file
 ```
 
-Config is saved to `~/.walkman_config.json`
+Config saved to: `~/.walkman_config.json`
 
 ---
 
-## Tips for Raspberry Pi
+## Tips
 
-- For **touchscreen** use, run fullscreen with `F11` after launching
-- For **autostart on boot**, add `walkman` to your desktop autostart file:
-  ```
-  ~/.config/autostart/walkman.desktop
-  ```
-  Copy the `.desktop` file from `~/.local/share/applications/walkman.desktop`
-
-- For **headless audio** (no monitor), mpv handles audio-only tracks automatically
-
----
-
-## Architecture
-
-- **UI**: Python `tkinter` — lightweight, no extra GUI dependencies
-- **Backend**: `mpv` via subprocess + Unix IPC socket for real-time control
-- **Visualizer**: Pure tkinter Canvas with animated bars (simulated, since raw PCM 
-  access requires additional libraries — add `librosa` for real FFT analysis)
-
----
-
-## License
-
-MIT — free to use, modify, and distribute.
+- **No cursor** shown (hidden for touchscreen cleanliness)
+- **Escape key** exits the app (useful during development)
+- **Arrow keys** work for playback control when testing on a desktop
+- The app runs **fullscreen** at 320×240 automatically
+- Add multiple music folders from the Settings screen
+- USB drives work — mount them and add the path in Settings
